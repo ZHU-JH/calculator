@@ -77,7 +77,6 @@ public:
     QWidget *page2;
     QGridLayout *gridLayout_4;
     QPushButton *buttonLeft_;
-    QPushButton *buttonTranspose;
     QPushButton *buttonInverse_;
     QHBoxLayout *horizontalLayout_6;
     QLabel *label_4;
@@ -86,7 +85,6 @@ public:
     QPushButton *buttonDelete_;
     QPushButton *buttonMinus_;
     QPushButton *buttonEqual_;
-    QPushButton *buttonDet;
     QPushButton *buttonPow_;
     QPushButton *buttonANS_;
     QPushButton *buttonRight_;
@@ -94,15 +92,17 @@ public:
     QHBoxLayout *horizontalLayout_5;
     QLabel *label_3;
     QSpinBox *spinBoxCol;
-    QPushButton *buttonSolveEquation;
     QPushButton *buttonMultiply_;
     QPushButton *buttonDivide_;
     QPushButton *buttonPlus_;
     QPushButton *buttonClear_;
     QTableWidget *tableWidget;
-    QPushButton *buttonAdjoint;
     QPushButton *buttonEigValues;
+    QPushButton *buttonAdjoint;
     QPushButton *buttonLog_5;
+    QPushButton *buttonTranspose;
+    QPushButton *buttonSolveEquation;
+    QPushButton *buttonDet;
     QPushButton *buttonTrace;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
@@ -115,8 +115,10 @@ public:
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(520, 738);
         MainWindow->setMaximumSize(QSize(5000, 9600));
+        MainWindow->setFocusPolicy(Qt::StrongFocus);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
+        centralWidget->setFocusPolicy(Qt::StrongFocus);
         gridLayout_5 = new QGridLayout(centralWidget);
         gridLayout_5->setSpacing(6);
         gridLayout_5->setContentsMargins(11, 11, 11, 11);
@@ -504,14 +506,6 @@ public:
 
         gridLayout_4->addWidget(buttonLeft_, 2, 6, 1, 1);
 
-        buttonTranspose = new QPushButton(page2);
-        buttonTranspose->setObjectName(QString::fromUtf8("buttonTranspose"));
-        sizePolicy.setHeightForWidth(buttonTranspose->sizePolicy().hasHeightForWidth());
-        buttonTranspose->setSizePolicy(sizePolicy);
-        buttonTranspose->setMaximumSize(QSize(200, 200));
-
-        gridLayout_4->addWidget(buttonTranspose, 0, 7, 1, 1);
-
         buttonInverse_ = new QPushButton(page2);
         buttonInverse_->setObjectName(QString::fromUtf8("buttonInverse_"));
         sizePolicy.setHeightForWidth(buttonInverse_->sizePolicy().hasHeightForWidth());
@@ -572,14 +566,6 @@ public:
 
         gridLayout_4->addWidget(buttonEqual_, 6, 7, 1, 1);
 
-        buttonDet = new QPushButton(page2);
-        buttonDet->setObjectName(QString::fromUtf8("buttonDet"));
-        sizePolicy.setHeightForWidth(buttonDet->sizePolicy().hasHeightForWidth());
-        buttonDet->setSizePolicy(sizePolicy);
-        buttonDet->setMaximumSize(QSize(200, 200));
-
-        gridLayout_4->addWidget(buttonDet, 0, 6, 1, 1);
-
         buttonPow_ = new QPushButton(page2);
         buttonPow_->setObjectName(QString::fromUtf8("buttonPow_"));
         sizePolicy.setHeightForWidth(buttonPow_->sizePolicy().hasHeightForWidth());
@@ -630,14 +616,6 @@ public:
 
         gridLayout_4->addLayout(horizontalLayout_5, 2, 2, 1, 1);
 
-        buttonSolveEquation = new QPushButton(page2);
-        buttonSolveEquation->setObjectName(QString::fromUtf8("buttonSolveEquation"));
-        sizePolicy.setHeightForWidth(buttonSolveEquation->sizePolicy().hasHeightForWidth());
-        buttonSolveEquation->setSizePolicy(sizePolicy);
-        buttonSolveEquation->setMaximumSize(QSize(200, 200));
-
-        gridLayout_4->addWidget(buttonSolveEquation, 1, 2, 1, 1);
-
         buttonMultiply_ = new QPushButton(page2);
         buttonMultiply_->setObjectName(QString::fromUtf8("buttonMultiply_"));
         sizePolicy.setHeightForWidth(buttonMultiply_->sizePolicy().hasHeightForWidth());
@@ -679,14 +657,6 @@ public:
 
         gridLayout_4->addWidget(tableWidget, 3, 0, 4, 5);
 
-        buttonAdjoint = new QPushButton(page2);
-        buttonAdjoint->setObjectName(QString::fromUtf8("buttonAdjoint"));
-        sizePolicy.setHeightForWidth(buttonAdjoint->sizePolicy().hasHeightForWidth());
-        buttonAdjoint->setSizePolicy(sizePolicy);
-        buttonAdjoint->setMaximumSize(QSize(200, 200));
-
-        gridLayout_4->addWidget(buttonAdjoint, 0, 4, 1, 1);
-
         buttonEigValues = new QPushButton(page2);
         buttonEigValues->setObjectName(QString::fromUtf8("buttonEigValues"));
         sizePolicy.setHeightForWidth(buttonEigValues->sizePolicy().hasHeightForWidth());
@@ -695,7 +665,15 @@ public:
         buttonEigValues->setAutoDefault(false);
         buttonEigValues->setFlat(false);
 
-        gridLayout_4->addWidget(buttonEigValues, 0, 2, 1, 1);
+        gridLayout_4->addWidget(buttonEigValues, 1, 2, 1, 1);
+
+        buttonAdjoint = new QPushButton(page2);
+        buttonAdjoint->setObjectName(QString::fromUtf8("buttonAdjoint"));
+        sizePolicy.setHeightForWidth(buttonAdjoint->sizePolicy().hasHeightForWidth());
+        buttonAdjoint->setSizePolicy(sizePolicy);
+        buttonAdjoint->setMaximumSize(QSize(200, 200));
+
+        gridLayout_4->addWidget(buttonAdjoint, 1, 0, 1, 1);
 
         buttonLog_5 = new QPushButton(page2);
         buttonLog_5->setObjectName(QString::fromUtf8("buttonLog_5"));
@@ -703,7 +681,31 @@ public:
         buttonLog_5->setSizePolicy(sizePolicy);
         buttonLog_5->setMaximumSize(QSize(200, 200));
 
-        gridLayout_4->addWidget(buttonLog_5, 1, 0, 1, 1);
+        gridLayout_4->addWidget(buttonLog_5, 0, 6, 1, 1);
+
+        buttonTranspose = new QPushButton(page2);
+        buttonTranspose->setObjectName(QString::fromUtf8("buttonTranspose"));
+        sizePolicy.setHeightForWidth(buttonTranspose->sizePolicy().hasHeightForWidth());
+        buttonTranspose->setSizePolicy(sizePolicy);
+        buttonTranspose->setMaximumSize(QSize(200, 200));
+
+        gridLayout_4->addWidget(buttonTranspose, 0, 2, 1, 1);
+
+        buttonSolveEquation = new QPushButton(page2);
+        buttonSolveEquation->setObjectName(QString::fromUtf8("buttonSolveEquation"));
+        sizePolicy.setHeightForWidth(buttonSolveEquation->sizePolicy().hasHeightForWidth());
+        buttonSolveEquation->setSizePolicy(sizePolicy);
+        buttonSolveEquation->setMaximumSize(QSize(200, 200));
+
+        gridLayout_4->addWidget(buttonSolveEquation, 0, 7, 1, 1);
+
+        buttonDet = new QPushButton(page2);
+        buttonDet->setObjectName(QString::fromUtf8("buttonDet"));
+        sizePolicy.setHeightForWidth(buttonDet->sizePolicy().hasHeightForWidth());
+        buttonDet->setSizePolicy(sizePolicy);
+        buttonDet->setMaximumSize(QSize(200, 200));
+
+        gridLayout_4->addWidget(buttonDet, 1, 4, 1, 1);
 
         buttonTrace = new QPushButton(page2);
         buttonTrace->setObjectName(QString::fromUtf8("buttonTrace"));
@@ -711,7 +713,7 @@ public:
         buttonTrace->setSizePolicy(sizePolicy);
         buttonTrace->setMaximumSize(QSize(200, 200));
 
-        gridLayout_4->addWidget(buttonTrace, 1, 4, 1, 1);
+        gridLayout_4->addWidget(buttonTrace, 0, 4, 1, 1);
 
         stackedWidget->addWidget(page2);
         buttonEqual_->raise();
@@ -729,12 +731,12 @@ public:
         buttonSet->raise();
         buttonInverse_->raise();
         buttonPow_->raise();
+        buttonEigValues->raise();
+        buttonAdjoint->raise();
+        buttonLog_5->raise();
         buttonTranspose->raise();
         buttonSolveEquation->raise();
         buttonDet->raise();
-        buttonAdjoint->raise();
-        buttonEigValues->raise();
-        buttonLog_5->raise();
         buttonTrace->raise();
 
         gridLayout_5->addWidget(stackedWidget, 2, 0, 1, 1);
@@ -803,27 +805,27 @@ public:
         buttonLog->setText(QCoreApplication::translate("MainWindow", "\343\217\222", nullptr));
         buttonTan->setText(QCoreApplication::translate("MainWindow", "tan", nullptr));
         buttonLeft_->setText(QCoreApplication::translate("MainWindow", "(", nullptr));
-        buttonTranspose->setText(QCoreApplication::translate("MainWindow", "trans", nullptr));
         buttonInverse_->setText(QCoreApplication::translate("MainWindow", "  x\342\201\273\302\271", nullptr));
         label_4->setText(QCoreApplication::translate("MainWindow", "\350\241\214:", nullptr));
         buttonStandard->setText(QCoreApplication::translate("MainWindow", "Standard", nullptr));
         buttonDelete_->setText(QCoreApplication::translate("MainWindow", "DEL", nullptr));
         buttonMinus_->setText(QCoreApplication::translate("MainWindow", "\357\274\215", nullptr));
         buttonEqual_->setText(QCoreApplication::translate("MainWindow", "\357\274\235", nullptr));
-        buttonDet->setText(QCoreApplication::translate("MainWindow", "det", nullptr));
         buttonPow_->setText(QCoreApplication::translate("MainWindow", "x\342\201\277", nullptr));
         buttonANS_->setText(QCoreApplication::translate("MainWindow", "Ans", nullptr));
         buttonRight_->setText(QCoreApplication::translate("MainWindow", ")", nullptr));
         buttonSet->setText(QCoreApplication::translate("MainWindow", "\350\256\276\347\275\256/\344\277\235\345\255\230", nullptr));
         label_3->setText(QCoreApplication::translate("MainWindow", "\345\210\227:", nullptr));
-        buttonSolveEquation->setText(QCoreApplication::translate("MainWindow", "solve", nullptr));
         buttonMultiply_->setText(QCoreApplication::translate("MainWindow", "\303\227", nullptr));
         buttonDivide_->setText(QCoreApplication::translate("MainWindow", "\303\267", nullptr));
         buttonPlus_->setText(QCoreApplication::translate("MainWindow", "\357\274\213", nullptr));
         buttonClear_->setText(QCoreApplication::translate("MainWindow", "AC", nullptr));
+        buttonEigValues->setText(QCoreApplication::translate("MainWindow", "eigen", nullptr));
         buttonAdjoint->setText(QCoreApplication::translate("MainWindow", "adj", nullptr));
-        buttonEigValues->setText(QCoreApplication::translate("MainWindow", "eig", nullptr));
         buttonLog_5->setText(QString());
+        buttonTranspose->setText(QCoreApplication::translate("MainWindow", "trans", nullptr));
+        buttonSolveEquation->setText(QString());
+        buttonDet->setText(QCoreApplication::translate("MainWindow", "det", nullptr));
         buttonTrace->setText(QCoreApplication::translate("MainWindow", "tr", nullptr));
         toolBar->setWindowTitle(QCoreApplication::translate("MainWindow", "toolBar", nullptr));
     } // retranslateUi

@@ -5,8 +5,8 @@ map<string, function<shared_ptr<Operator>()>> Factory::op_map;
 
 REGISTER("+",Plus);
 REGISTER("-",Minus);
-REGISTER("*",Multiply);
-REGISTER("/",Divide);
+REGISTER("×",Multiply);
+REGISTER("÷",Divide);
 REGISTER("(",Left);
 REGISTER(")",Right);
 REGISTER("%",Mod);

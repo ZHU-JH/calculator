@@ -14,12 +14,13 @@ void Calculator::standardize(vector<string> &stream){
     int sign=1;     //判断正负号
     int lCount=0;   //未匹配的左括号数
     if(stream[0]=="") stream.erase(stream.begin());//清除空字符
+    if(stream.back()=="") stream.pop_back();//清除空字符
     for(int i=0;i<stream.size();i++){
         if(!isNum(stream[i])){
             if(stream[i]=="(") lCount++;
             if(stream[i]==")") lCount--;
             auto ptr=Factory::create(stream[i]);
-            assert(ptr!=nullptr);
+            if(ptr==nullptr) throw string("unexpected input");
             if(i==0||(!isNum(stream[i-1])&&stream[i-1]!=")"&&stream[i-1]!="inv")){//删去多余的+-号
                 if(stream[i]=="+"){
                     stream.erase(stream.begin()+i);
@@ -31,15 +32,15 @@ void Calculator::standardize(vector<string> &stream){
                     i--;
                 }
             }
-            //补全忽略的乘号，补全条件：当前字符串为单目运算符或（，且前一个字符串为数字
-            if(i>0&&(ptr->numOprand<=1&&!ptr->haveLeftOprand)&&(isNum(stream[i-1]))){
+            //补全忽略的乘号，补全条件：当前字符串为单目运算符或（，且前一个字符串为数字或）
+            if(i>0&&(ptr->numOprand<=1&&!ptr->haveLeftOprand)&&(isNum(stream[i-1])||stream[i-1]==")")){
                 stream.insert(stream.begin()+i,"*");
                 i++;
              }
         }
         else{
-            //补全忽略的乘号，补全条件：当前字符串为特殊数字，且前一个字符串为数字
-            if(i>0&&isNum(stream[i-1])){
+            //补全忽略的乘号，补全条件：当前字符串为特殊数字，且前一个字符串为数字或）
+            if(i>0&&(isNum(stream[i-1])||stream[i-1]==")")){
                 stream.insert(stream.begin()+i,"*");
                 i++;
              }
@@ -80,10 +81,14 @@ bool Calculator::solve(vector<string>& stream){
     for(int i=0;i<stream.size();i++){
         if (isNum(stream[i])){ //操作数入栈
             if(!includeMatrix){
-                num_stack.push(stringToDouble(stream[i]));  //非矩阵模式
+                if(stream[i]=="ANS") num_stack.push(ans_num);
+                else num_stack.push(stringToDouble(stream[i]));  //非矩阵模式
             }
             else if(stream[i]=="MATRIX"){
                 mat_stack.push(matrix_list[mat_index++]);
+            }
+            else if(stream[i]=="ANS"){
+                mat_stack.push(ans_mat);
             }
             else{
                 mat_stack.push(doubleToMatrix(stringToDouble(stream[i])));

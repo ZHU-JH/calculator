@@ -3,10 +3,12 @@
 #include"calculator.h"
 #include"global.h"
 #include"Factory.h"
+#include<QShortcut>
 #include<QTextTable>
 #include<QTextTableCellFormat>
 #include<QTextDocument>
 #include<Eigen/Dense>
+
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -26,15 +28,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->buttonRight_,SIGNAL(clicked()),this,SLOT(on_buttonRight_clicked()));
     connect(ui->buttonInverse_,SIGNAL(clicked()),this,SLOT(on_buttonInverse_clicked()));
     connect(ui->buttonPow_,SIGNAL(clicked()),this,SLOT(on_buttonPow_clicked()));
+
     //设置字体大小
     QFont font;
     font.setPointSize(15);
     ui->textInput->document()->setDefaultFont(font);
     ui->textOutput->document()->setDefaultFont(font);
     //设置表格格式
-    tableFormat.setMargin(0);
-    tableFormat.setPadding(0);
-    tableFormat.setBorder(1);
+    tableFormat.setBorder(0);
     //设置单元格格式
     line.setVerticalAlignment(QTextCharFormat::AlignMiddle);//居中单元格
     //矩阵单元格
@@ -44,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent) :
     cellFormat.setRightBorder(1);
     cellFormat.setPadding(2);
     initialize();
+
+    ui->textInput->setAttribute(Qt::WA_InputMethodEnabled, false);
+    this->grabKeyboard();
 }
 
 MainWindow::~MainWindow()
@@ -54,8 +58,8 @@ MainWindow::~MainWindow()
 void MainWindow::initialize()
 {
     ui->textInput->blockSignals(true);
-    includeMatrix=false;
-    position=0;
+    _pos=0;
+    includeMatrix=0;
     Calculator::getInstance().clear();
     stream.clear();         //清空数据流
     stream.emplace_back("");
@@ -82,88 +86,118 @@ void MainWindow::initialize()
     ui->textInput->blockSignals(false);
 }
 
-
-void MainWindow::input(string s_diplayed,string s){
-    if(stream.empty())initialize();
-    //保存数据  
-    if(isNum(s)){
-        if(isNum(stream.back()))stream.back()+=s;
-        else stream.emplace_back(s);
-        /*
-        if(isNum(stream[position])){//在数字格内
-            stream[position].insert(cursor.positionInBlock(),s);
+void MainWindow::saveData(std::string s){
+    if(isNum(s)&&s.size()==1){//插入数字
+        if(isNum(stream[_pos])) stream[_pos].insert(cursor.positionInBlock(),s);
+        else if(_pos<stream.size()-1&&cursor.atBlockEnd()&&isNum(stream[_pos+1])){
+            cursor.movePosition(QTextCursor::Right);
+            _pos++;
+            stream[_pos].insert(cursor.positionInBlock(),s);
+        }
+        else stream.insert(stream.begin()+_pos+1,s);
+    }
+    else{//插入符号或PI或MATRIX
+        if(cursor.atBlockEnd()){
+             stream.insert(stream.begin()+_pos+1,s);
         }
         else{
-            stream.insert(stream.begin()+position,s);
-            position++;
+            string rOprand=stream[_pos].substr(cursor.positionInBlock(),stream[_pos].size()-cursor.positionInBlock());
+            stream[_pos]=stream[_pos].substr(0,cursor.positionInBlock());
+            stream.insert(stream.begin()+_pos+1,rOprand);
+            stream.insert(stream.begin()+_pos+1,s);
+
         }
-        */
-    }
-    else{
-        auto ptr=Factory::create(s);
-         stream.emplace_back(s);
-         //单目运算符且有右操作数则补全（
-         if(ptr->numOprand==1&&ptr->haveRightOprand){
-             stream.emplace_back("(");
-         }
-    }
-    //显示数据
-    cursor.beginEditBlock();
-    if(isNum(s))cursor.insertText(QString::fromStdString(s_diplayed));
-    else{
-        //表尾单元格非空则插入新单元格
-        if(table->cellAt(0,position).firstPosition()!=table->cellAt(0,position).lastPosition()){
-            table->appendColumns(1);
-            table->cellAt(0,++position).setFormat(line);
+        if(!isNum(s)){
+            auto ptr=Factory::create(s);
+             //单目运算符且有右操作数则补全（
+             if(ptr->numOprand==1&&ptr->haveRightOprand){
+                 stream.insert(stream.begin()+_pos+2,"(");
+             }
         }
-        cursor.insertText(QString::fromStdString(s_diplayed));
-        auto ptr=Factory::create(s);
-        //单目运算符且有右操作数则补全（
-        if(ptr->numOprand==1&&ptr->haveRightOprand){
-            cursor.endEditBlock();
-            cursor.beginEditBlock();
-            table->appendColumns(1);
-            table->cellAt(0,++position).setFormat(line);
-            cursor.insertText(QString::fromStdString("("));
-        }
-        table->appendColumns(1);
-        table->cellAt(0,++position).setFormat(line);
     }
-    cursor.endEditBlock();
+}
+
+void MainWindow::displayData(std::string s_displayed,string s){
+    if(isNum(s)&&s.size()==1){//显示数字
+        if(!isNum(stream[_pos])){
+            _pos++;
+            table->insertColumns(_pos,1);
+            table->cellAt(0,_pos).setFormat(line);
+        }
+        cursor.insertText(QString::fromStdString(s_displayed));
+    }
+    else{//显示符号
+        if(cursor.atBlockEnd()){
+            _pos++;
+            table->insertColumns(_pos,1);
+            table->cellAt(0,_pos).setFormat(line);
+        }
+        else{
+            cursor.movePosition(QTextCursor::EndOfBlock,QTextCursor::KeepAnchor);
+            QString qs=cursor.selectedText();
+            cursor.removeSelectedText();
+            _pos++;
+            table->insertColumns(_pos,1);
+            table->cellAt(0,_pos).setFormat(line);
+            cursor.insertText(qs);
+            table->insertColumns(_pos,1);
+            table->cellAt(0,_pos).setFormat(line);
+            cursor=table->cellAt(0,_pos).firstCursorPosition();
+        }
+        cursor.insertText(QString::fromStdString(s_displayed));
+        if(!isNum(s)){
+            auto ptr=Factory::create(s);
+            //单目运算符且有右操作数则补全（
+            if(ptr->numOprand==1&&ptr->haveRightOprand){
+                _pos++;
+                table->insertColumns(_pos,1);
+                table->cellAt(0,_pos).setFormat(line);
+                cursor.insertText(QString::fromStdString("("));
+            }
+        }
+    }
+}
+
+void MainWindow::input(string s_displayed,string s){
+    if(stream.empty())initialize();
+    saveData(s);        //保存数据
+    displayData(s_displayed,s);    //显示数据
 }
 
 void MainWindow::input_matrix(const Eigen::MatrixXd& m)
 {
     int row=m.rows();
     int col=m.cols();
-    cursor.beginEditBlock();
-    table->appendColumns(1);
-    table->cellAt(0,++position).setFormat(cellFormat);
+    _pos++;
+    table->insertColumns(_pos,1);
+    table->cellAt(0,_pos).setFormat(cellFormat);
     //嵌套表格
     QTextTable *subtable=cursor.insertTable(row,col,tableFormat);
     for(int j=0;j<col;j++){
         for(int i=0;i<row;i++){
-            cursor = subtable->cellAt(i,j).firstCursorPosition();
-            cursor.insertText(doubleToQString(m(i,j)));
+            subtable->cellAt(i,j).firstCursorPosition().insertText(doubleToQString(m(i,j)));
         }
     }
-    table->appendColumns(1);
-    table->cellAt(0,++position).setFormat(line);
-    cursor=table->cellAt(0,position).firstCursorPosition();
-    cursor.endEditBlock();
+    cursor=table->cellAt(0,_pos).lastCursorPosition();
+    //cursor=table->lastCursorPosition();
+    ui->textInput->setTextCursor(cursor);
 }
 
 void MainWindow::on_textInput_textChanged()
 {
+    int p=cursor.blockNumber()-1;
+    QTextCursor tmp=table->cellAt(0,p).firstCursorPosition();
+    tmp.movePosition(QTextCursor::EndOfBlock,QTextCursor::KeepAnchor);
+    string changedText=tmp.selectedText().toStdString();
+    if(stream[p]!=changedText) stream[p]=changedText;
     ui->textInput->setFocus();
     ui->textInput->setTextCursor(cursor);
-    //ui->textOutput->setText(QString::fromStdString(stream[position]));
 }
 /******************************************************************************************/
 //按键槽函数
 #define BUTTON_3(S_DISPLAYED,S_ACTUAL,S_NAME) void MainWindow::on_button##S_NAME##_clicked(){input(S_DISPLAYED,S_ACTUAL);}
-#define BUTTON_2(S_DISPLAYED,S_NAME) BUTTON_3(S_DISPLAYED,S_DISPLAYED,S_NAME)
-#define BUTTON_1(NUM) BUTTON_3(#NUM,#NUM,NUM)
+#define BUTTON_2(S_DISPLAYED,S_NAME)          BUTTON_3(S_DISPLAYED,S_DISPLAYED,S_NAME)
+#define BUTTON_1(NUM)                         BUTTON_3(#NUM,#NUM,NUM)
 
 BUTTON_1(0)
 BUTTON_1(1)
@@ -192,92 +226,86 @@ BUTTON_2("det",Det)
 BUTTON_2("tr",Trace)
 BUTTON_2("adj",Adjoint)
 BUTTON_2("trans",Transpose)
-BUTTON_3("×","*",Multiply)
-BUTTON_3("÷","/",Divide)
+BUTTON_2("×",Multiply)
+BUTTON_2("÷",Divide)
+BUTTON_3(QString(QChar(0x221A)).toStdString(),"sqrt",Sqrt)
+
 
 void MainWindow::on_buttonPI_clicked()
 {
     if(stream.empty())initialize();
-    stream.emplace_back(doubleToString(PI));
-    cursor.beginEditBlock();
-    if(table->cellAt(0,position).firstPosition()!=table->cellAt(0,position).lastPosition()){
-        table->appendColumns(1);
-        table->cellAt(0,++position).setFormat(line);
-    }
-    cursor.insertText(QString::fromStdString("π"));
-    table->appendColumns(1);
-    table->cellAt(0,++position).setFormat(line);
-    cursor.endEditBlock();
+    saveData(doubleToString(PI));
+    displayData(doubleToString(PI),doubleToString(PI));
 }
-
 
 void MainWindow::on_buttonANS_clicked()
 {
     if(stream.empty())initialize();
-    if(ans_mat.size()>1&&ans_mat(0,0)!=0){
-        includeMatrix=true;
-        stream.emplace_back("MATRIX");
-        matrix_list.emplace_back(ans_mat);
-        input_matrix(ans_mat);
-    }
-    else{
-        stream.emplace_back(doubleToString(ans_num));
-        cursor.insertText(doubleToQString(ans_num));
-    }
+    saveData("ANS");
+    displayData("ANS","ANS");
+    if(ans_mat.size()==1&&ans_mat(0,0)==0) return;
+    includeMatrix++;
 }
 
 
 void MainWindow::on_buttonPow_clicked()
 {
     if(stream.empty())initialize();
-    //保存数据
-    stream.emplace_back("pow");
-    //显示数据
-    cursor.beginEditBlock();
-    if(table->cellAt(0,position).firstPosition()!=table->cellAt(0,position).lastPosition()){
-        table->appendColumns(1);
-        position++;
-    }
+    saveData("pow");
+    _pos++;
+    table->insertColumns(_pos,1);
+    table->cellAt(0,_pos).setFormat(line);
     QTextTableCellFormat lineTop;
     lineTop.setVerticalAlignment(QTextCharFormat::AlignTop);
     lineTop.setFontPointSize(10);
-    table->cellAt(0,position).setFormat(lineTop);
-    cursor.endEditBlock();
+    table->cellAt(0,_pos).setFormat(lineTop);
+    if(cursor.atBlockEnd()){
+        _pos++;
+        table->insertColumns(_pos,1);
+        table->cellAt(0,_pos).setFormat(lineTop);
+    }
+    else{
+        cursor.movePosition(QTextCursor::EndOfBlock,QTextCursor::KeepAnchor);
+        QString qs=cursor.selectedText();
+        cursor.removeSelectedText();
+        _pos++;
+        table->insertColumns(_pos,1);
+        table->cellAt(0,_pos).setFormat(line);
+        cursor.insertText(qs);
+        table->insertColumns(_pos,1);
+        table->cellAt(0,_pos).setFormat(lineTop);
+        cursor=table->cellAt(0,_pos).firstCursorPosition();
+        ui->textInput->setTextCursor(cursor);
+    }
+    stream.insert(stream.begin()+_pos,"");
 }
 
-void MainWindow::on_buttonSqrt_clicked()
-{
-    if(stream.empty())initialize();
-    //保存数据
-    stream.emplace_back("sqrt");
-    //显示数据
-    cursor.beginEditBlock();
-    if(table->cellAt(0,position).firstPosition()!=table->cellAt(0,position).lastPosition()){
-        table->appendColumns(1);
-        table->cellAt(0,++position).setFormat(line);
-    }
-    QChar ch(0x221A);
-    cursor.insertText(ch);
-    table->appendColumns(1);
-    table->cellAt(0,++position).setFormat(line);
-    cursor.endEditBlock();
-}
 
 void MainWindow::on_buttonInverse_clicked(){
     if(stream.empty())initialize();
-    //保存数据
-    stream.emplace_back("inv");
-    //显示数据
-    cursor.beginEditBlock();
-    table->appendColumns(1);
+    saveData("inv");
     QTextTableCellFormat lineTop;
     lineTop.setVerticalAlignment(QTextCharFormat::AlignTop);
-    table->cellAt(0,++position).setFormat(lineTop);
+    if(cursor.atBlockEnd()){
+        _pos++;
+        table->insertColumns(_pos,1);
+        table->cellAt(0,_pos).setFormat(lineTop);
+    }
+    else{
+        cursor.movePosition(QTextCursor::EndOfBlock,QTextCursor::KeepAnchor);
+        QString qs=cursor.selectedText();
+        cursor.removeSelectedText();
+        _pos++;
+        table->insertColumns(_pos,1);
+        table->cellAt(0,_pos).setFormat(line);
+        cursor.insertText(qs);
+        table->insertColumns(_pos,1);
+        table->cellAt(0,_pos).setFormat(lineTop);
+        cursor=table->cellAt(0,_pos).firstCursorPosition();
+    }
     cursor.insertHtml("<sup>-1</sup>");
-    table->appendColumns(1);
-    table->cellAt(0,++position).setFormat(line);
-    cursor.endEditBlock();
 }
+
 
 void MainWindow::on_buttonSet_clicked()
 {
@@ -295,7 +323,10 @@ void MainWindow::on_buttonSet_clicked()
         ui->tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);//平均分配行宽
     }
     else{       //保存矩阵
-        includeMatrix=true;
+        includeMatrix++;
+        //if(stream[_pos]=="") stream[_pos]="MATRIX";
+        stream.insert(stream.begin()+_pos+1,"MATRIX");
+
         Eigen::MatrixXd matXd(row,col);
         for(int j=0;j<col;j++){
             for(int i=0;i<row;i++){
@@ -304,13 +335,10 @@ void MainWindow::on_buttonSet_clicked()
             }
         }
     input_matrix(matXd);  //显示输入矩阵
-
-    stream.emplace_back("MATRIX");
     matrix_list.emplace_back(matXd);
     ui->tableWidget->clear();
     }
 }
-
 
 void MainWindow::on_buttonEqual_clicked()
 {
@@ -357,20 +385,35 @@ void MainWindow::on_buttonClear_clicked()
 
 void MainWindow::on_buttonDelete_clicked()
 {
-    if(stream.empty()) initialize();
-    ui->textInput->undo();
-    position=table->columns()-1;
-    if(!isNum(stream.back())){
-        stream.pop_back();
+    ui->textInput->setFocus();
+    if(_pos==0&&cursor.atBlockStart()) return;
+    if(!isNum(stream[_pos])){//删除运算符
+        stream.erase(stream.begin()+_pos);
+        table->removeColumns(_pos,1);
+        _pos--;
     }
-    else if(stream.back()=="MATRIX"){
-        stream.pop_back();
+    else{//删除数字
+        stream[_pos].erase(stream[_pos].begin()+cursor.positionInBlock()-1);
+        cursor.deletePreviousChar();
+        if(_pos!=0&&cursor.atBlockStart()){
+            cursor.movePosition(QTextCursor::Left);
+            ui->textInput->setTextCursor(cursor);
+            if(stream[_pos]==""){
+                table->removeColumns(_pos,1);
+                stream.erase(stream.begin()+_pos);
+            }
+            _pos--;
+        }
     }
-    else{
-        stream.back()=stream.back().substr(0,stream.back().size()-1);
-        if(stream.back()=="")stream.pop_back();
+    //合并数字
+    if(_pos<stream.size()-1&&isNum(stream[_pos])&&isNum(stream[_pos+1])){
+        stream[_pos]+=stream[_pos+1];
+        int position=cursor.position();
+        cursor.insertText(QString::fromStdString(stream[_pos+1]));
+        cursor.setPosition(position);
+        stream.erase(stream.begin()+_pos+1);
+        table->removeColumns(_pos+1,1);
     }
-    //ui->textOutput->setText(QString::fromStdString(stream.back()));
 }
 
 
@@ -379,46 +422,134 @@ void MainWindow::on_buttonMatrix_clicked()
     ui->stackedWidget->setCurrentWidget(ui->page2);
 }
 
+
 void MainWindow::on_buttonStandard_clicked()
 {
     ui->stackedWidget->setCurrentWidget(ui->page1);
 }
 
+
 void MainWindow::on_buttonMoveLeft_clicked()
 {
+    if(stream.empty())initialize();
     ui->textInput->setFocus();
+    if(isNum(stream[_pos]))cursor.movePosition(QTextCursor::Left);
+    else{
+        cursor.movePosition(QTextCursor::WordLeft);
+        cursor.movePosition(QTextCursor::Left);
+        _pos--;
+    }
     if(cursor.atBlockStart()){
+        _pos--;
         cursor.movePosition(QTextCursor::Left);
     }
-    cursor.movePosition(QTextCursor::Left);
-    if(cursor.atStart()){
+    if(cursor.atStart()){//越界处理
+        _pos++;
         cursor.movePosition(QTextCursor::Right);
     }
     ui->textInput->setTextCursor(cursor);
-    position=cursor.blockNumber()-1;
-    //ui->textOutput->setText(QString::number(cursor.blockNumber()));
+    //ui->textOutput->setText(QString::number(_pos));
+    ui->textOutput->setText(QString::fromStdString(stream[_pos]));
 }
 
 
 void MainWindow::on_buttonMoveRight_clicked()
 {
+    if(stream.empty())initialize();
     ui->textInput->setFocus();
-    if(cursor.atBlockEnd()){
+    cursor.movePosition(QTextCursor::Right);
+    if(_pos<stream.size()-1&&cursor.atBlockStart()&&!isNum(stream[_pos+1])){
+        _pos++;
+        cursor.movePosition(QTextCursor::WordRight);
+    }
+    if(cursor.atBlockStart()){
+        _pos++;
         cursor.movePosition(QTextCursor::Right);
     }
-    cursor.movePosition(QTextCursor::Right);
     if(cursor.atEnd()){
+        _pos--;
         cursor.movePosition(QTextCursor::Left);
     }
     ui->textInput->setTextCursor(cursor);
-    position=cursor.blockNumber()-1;
-    //ui->textOutput->setText(QString::number(cursor.blockNumber()));
+    //ui->textOutput->setText(QString::number(_pos));
+    ui->textOutput->setText(QString::fromStdString(stream[_pos]));
 }
 
 
-
-void MainWindow::on_buttonSolveEquation_clicked()
+void MainWindow::keyPressEvent(QKeyEvent *event)
 {
+    switch (event->key())
+    {
+        case Qt::Key_1:
+            on_button1_clicked();
+            break;
+        case Qt::Key_2:
+            on_button2_clicked();
+            break;
+        case Qt::Key_3:
+            on_button3_clicked();
+            break;
+        case Qt::Key_4:
+            on_button4_clicked();
+            break;
+        case Qt::Key_5:
+            on_button5_clicked();
+            break;
+        case Qt::Key_6:
+             on_button6_clicked();
+             break;
+        case Qt::Key_7:
+            on_button7_clicked();
+            break;
+        case Qt::Key_8:
+            on_button8_clicked();
+            break;
+        case Qt::Key_9:
+             on_button9_clicked();
+             break;
+        case Qt::Key_0:
+            on_button0_clicked();
+            break;
+        case Qt::Key_Left:
+            on_buttonMoveLeft_clicked();
+            break;
+        case Qt::Key_Right:
+            on_buttonMoveRight_clicked();
+            break;
+        case Qt::Key_Plus:
+            on_buttonPlus_clicked();
+            break;
+        case Qt::Key_Asterisk:
+            on_buttonMultiply_clicked();
+            break;
+        case Qt::Key_Slash:
+            on_buttonDivide_clicked();
+            break;
+        case Qt::Key_Period:
+             on_buttonDot_clicked();
+             break;
+        case Qt::Key_Percent:
+            on_buttonMod_clicked();
+            break;
+        case Qt::Key_ParenLeft:
+            on_buttonLeft_clicked();
+            break;
+        case Qt::Key_ParenRight:
+             on_buttonRight_clicked();
+             break;
+        case Qt::Key_Backspace:
+            on_buttonDelete_clicked();
+            break;
 
+        case Qt::Key_Minus:
+            on_buttonMinus_clicked();
+            break;
+        case Qt::Key_Equal:
+            on_buttonEqual_clicked();
+            break;
+       default:
+           break;
+       }
+        ui->textInput->setFocus();
 }
 

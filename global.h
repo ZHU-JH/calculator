@@ -7,14 +7,12 @@
 #include<sstream>
 #include"calculator.h"
 #define PI 3.1415926535
-
-extern bool includeMatrix;
-extern int position;
+extern int _pos;
+extern int includeMatrix;
 extern double ans_num;
 extern Eigen::MatrixXd ans_mat;
 extern vector<Eigen::MatrixXd>matrix_list;
 extern vector<string> stream;
-//extern Calculator cal;
 
 extern bool isNum(string s);
 extern double stringToDouble(std::string s);

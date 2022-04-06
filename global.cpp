@@ -2,14 +2,13 @@
 
 vector<string> stream={""};
 vector<Eigen::MatrixXd>matrix_list;
-//Calculator cal;
-int position=0;
-bool includeMatrix=false;
+int _pos=0;
+int includeMatrix=0;
 double ans_num=0;
 Eigen::MatrixXd ans_mat=Eigen::MatrixXd::Zero(1,1);
 
 bool isNum(string s) {
-    return s.empty()||(s[0] >= '0' && s[0] <= '9' )||(s[0]=='-'&&s.size()>1)|| s[0] == '.'||s=="e"||s=="MATRIX";
+    return s.empty()||(s[0] >= '0' && s[0] <= '9' )||(s[0]=='-'&&s.size()>1)|| s[0] == '.'||s=="MATRIX"||s=="ANS";
 }
 
 std::string doubleToString(double value)

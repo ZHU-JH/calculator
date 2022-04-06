@@ -4,6 +4,7 @@
 #include<QMainWindow>
 #include<qtablewidget.h>
 #include<QTextEdit>
+#include<QKeyEvent>
 #include<QString>
 #include<string>
 #include<Eigen/Dense>
@@ -72,19 +73,21 @@ private slots:
 
     void on_buttonTranspose_clicked();
 
-    void on_buttonSolveEquation_clicked();
-
 private:
-    void input(std::string s_diplayed,std::string s);
+    void input(std::string s_displayed,std::string s);
     void input_matrix(const Eigen::MatrixXd& m);
     void initialize();
+    void saveData(std::string s);
+    void displayData(std::string s_displayed,std::string s);
 private:
+    QTextBlockFormat blockFormat;
     QTextTableFormat tableFormat;
     QTextTableCellFormat cellFormat,line;
-    QTextBlockFormat blockFormat;
     QTextTable *table;
     QTextCursor cursor;
     Ui::MainWindow *ui;
+protected:
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // MAINWINDOW_H

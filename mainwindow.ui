@@ -16,10 +16,16 @@
     <height>9600</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <layout class="QGridLayout" name="gridLayout_5">
     <item row="1" column="0">
      <widget class="QTextBrowser" name="textOutput">
@@ -933,25 +939,6 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="7">
-         <widget class="QPushButton" name="buttonTranspose">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>200</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>trans</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="6">
          <widget class="QPushButton" name="buttonInverse_">
           <property name="sizePolicy">
@@ -1086,25 +1073,6 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="6">
-         <widget class="QPushButton" name="buttonDet">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>200</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>det</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="7">
          <widget class="QPushButton" name="buttonPow_">
           <property name="sizePolicy">
@@ -1207,25 +1175,6 @@
            </widget>
           </item>
          </layout>
-        </item>
-        <item row="1" column="2">
-         <widget class="QPushButton" name="buttonSolveEquation">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>200</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>solve</string>
-          </property>
-         </widget>
         </item>
         <item row="4" column="6">
          <widget class="QPushButton" name="buttonMultiply_">
@@ -1330,7 +1279,35 @@
         <item row="3" column="0" rowspan="4" colspan="5">
          <widget class="QTableWidget" name="tableWidget"/>
         </item>
-        <item row="0" column="4">
+        <item row="1" column="2">
+         <widget class="QPushButton" name="buttonEigValues">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>200</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>eigen</string>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
          <widget class="QPushButton" name="buttonAdjoint">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -1349,35 +1326,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QPushButton" name="buttonEigValues">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>200</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>eig</string>
-          </property>
-          <property name="autoDefault">
-           <bool>false</bool>
-          </property>
-          <property name="default">
-           <bool>false</bool>
-          </property>
-          <property name="flat">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
+        <item row="0" column="6">
          <widget class="QPushButton" name="buttonLog_5">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -1396,7 +1345,64 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="buttonTranspose">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>200</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>trans</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="7">
+         <widget class="QPushButton" name="buttonSolveEquation">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>200</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="4">
+         <widget class="QPushButton" name="buttonDet">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>200</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>det</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
          <widget class="QPushButton" name="buttonTrace">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -1431,12 +1437,12 @@
        <zorder>buttonSet</zorder>
        <zorder>buttonInverse_</zorder>
        <zorder>buttonPow_</zorder>
+       <zorder>buttonEigValues</zorder>
+       <zorder>buttonAdjoint</zorder>
+       <zorder>buttonLog_5</zorder>
        <zorder>buttonTranspose</zorder>
        <zorder>buttonSolveEquation</zorder>
        <zorder>buttonDet</zorder>
-       <zorder>buttonAdjoint</zorder>
-       <zorder>buttonEigValues</zorder>
-       <zorder>buttonLog_5</zorder>
        <zorder>buttonTrace</zorder>
       </widget>
      </widget>
