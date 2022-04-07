@@ -19,7 +19,7 @@ public:
     virtual ~Operator() {}
 };
 
-class Plus : public Operator { // 运算符+
+class Plus : public Operator {
 public:
     Plus() :Operator( 2, 2) {}
     double get(double a, double b) const {
@@ -31,7 +31,7 @@ public:
     }
 };
 
-class Minus :public Operator { // 运算符-
+class Minus :public Operator {
 public:
     Minus() :Operator(2, 2) {}
     double get(double a, double b) const {
@@ -43,7 +43,7 @@ public:
     }
 };
 
-class Multiply :public Operator { // 运算符*
+class Multiply :public Operator {
 public:
     Multiply() :Operator(2, 3) {}
     double get(double a, double b) const {
@@ -57,7 +57,7 @@ public:
 };
 
 
-class Divide :public Operator { // 运算符/
+class Divide :public Operator {
 public:
     Divide() :Operator(2, 3) {}
     double get(double a, double b) const {
@@ -67,37 +67,37 @@ public:
 };
 
 
-class Left :public Operator { // 运算符#
+class Left :public Operator {
 public:
     Left() :Operator(0, 0,false,true) {}
     double get(double a, double b) const {
-        return b; // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return b;
     }
     Eigen::MatrixXd get(Eigen::MatrixXd& a, Eigen::MatrixXd& b) const {
-                return b; // 本身#不需要进行任何运算, 但是仍然需要返回值
+                return b;
             }
 };
 
-class Right :public Operator { // 运算符#
+class Right :public Operator {
 public:
     Right() :Operator(0, 0,true,false) {}
     double get(double a, double b) const {
-        return b; // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return b;
     }
     Eigen::MatrixXd get(Eigen::MatrixXd& a, Eigen::MatrixXd& b) const {
-            return b; // 本身#不需要进行任何运算, 但是仍然需要返回值
+            return b;
         }
 };
 
-class Exp10 :public Operator { // 运算符#
+class Exp10 :public Operator {
 public:
     Exp10() :Operator(2, 4) {}
     double get(double a, double b=1) const {
-        return a*pow(10,b); // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return a*pow(10,b);
     }
 };
 
-class Pow :public Operator { // 运算符#
+class Pow :public Operator {
 public:
     Pow() :Operator(2, 4) {}
     double get(double a, double b) const {
@@ -114,49 +114,49 @@ public:
     }
 };
 
-class Mod :public Operator { // 运算符#
+class Mod :public Operator {
 public:
     Mod() :Operator(2, 3) {}
     double get(double a, double b) const {
-        return int(a)%int(b); // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return int(a)%int(b);
     }
 };
 
-class Sin :public Operator { // 运算符#
+class Sin :public Operator {
 public:
     Sin() :Operator(1, 5,false,true) {}
     double get(double a, double b) const {
-        return sin(b); // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return sin(b);
     }
 };
 
 
-class Cos :public Operator { // 运算符#
+class Cos :public Operator {
 public:
     Cos() :Operator(1, 5,false,true) {}
     double get(double a, double b) const {
-        return cos(b); // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return cos(b);
     }
 };
 
-class Tan :public Operator { // 运算符#
+class Tan :public Operator {
 public:
     Tan() :Operator(1, 5,false,true) {}
     double get(double a, double b) const {
         if(b==(atan(1.0) * 4)/2)throw string("undefined");
-        return tan(b); // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return tan(b);
     }
 };
 
-class Sqrt :public Operator { // 运算符#
+class Sqrt :public Operator {
 public:
     Sqrt() :Operator(1, 5,false,true) {}
     double get(double a, double b) const {
-        return sqrt(b); // 本身#不需要进行任何运算, 但是仍然需要返回值
+        return sqrt(b);
     }
 };
 
-class Log :public Operator { // 运算符#
+class Log :public Operator {
 public:
     Log() :Operator(1, 5,false,true) {}
     double get(double a, double b) const {
@@ -164,7 +164,7 @@ public:
     }
 };
 
-class Ln :public Operator { // 运算符#
+class Ln :public Operator {
 public:
     Ln() :Operator(1, 5,false,true) {}
     double get(double a, double b) const {
@@ -186,7 +186,7 @@ public:
 };
 
 
-class EigValues : public Operator { // 运算符+
+class EigValues : public Operator {
 public:
     EigValues() :Operator( 1, 2,false,true) {}
     Eigen::MatrixXd get(Eigen::MatrixXd& a,Eigen::MatrixXd& b)const{

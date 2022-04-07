@@ -45,8 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
     cellFormat.setRightBorder(1);
     cellFormat.setPadding(2);
     initialize();
-
     ui->textInput->setAttribute(Qt::WA_InputMethodEnabled, false);
+    this->setWindowTitle("calculator");
     this->grabKeyboard();
 }
 
@@ -86,7 +86,7 @@ void MainWindow::initialize()
     ui->textInput->blockSignals(false);
 }
 
-void MainWindow::saveData(std::string s){
+void MainWindow::saveData(string s){
     if(isNum(s)&&s.size()==1){//插入数字
         if(isNum(stream[_pos])) stream[_pos].insert(cursor.positionInBlock(),s);
         else if(_pos<stream.size()-1&&cursor.atBlockEnd()&&isNum(stream[_pos+1])){
@@ -105,7 +105,6 @@ void MainWindow::saveData(std::string s){
             stream[_pos]=stream[_pos].substr(0,cursor.positionInBlock());
             stream.insert(stream.begin()+_pos+1,rOprand);
             stream.insert(stream.begin()+_pos+1,s);
-
         }
         if(!isNum(s)){
             auto ptr=Factory::create(s);
@@ -117,14 +116,14 @@ void MainWindow::saveData(std::string s){
     }
 }
 
-void MainWindow::displayData(std::string s_displayed,string s){
+void MainWindow::displayData(string s){
     if(isNum(s)&&s.size()==1){//显示数字
         if(!isNum(stream[_pos])){
             _pos++;
             table->insertColumns(_pos,1);
             table->cellAt(0,_pos).setFormat(line);
         }
-        cursor.insertText(QString::fromStdString(s_displayed));
+        cursor.insertText(QString::fromStdString(s));
     }
     else{//显示符号
         if(cursor.atBlockEnd()){
@@ -144,7 +143,7 @@ void MainWindow::displayData(std::string s_displayed,string s){
             table->cellAt(0,_pos).setFormat(line);
             cursor=table->cellAt(0,_pos).firstCursorPosition();
         }
-        cursor.insertText(QString::fromStdString(s_displayed));
+        cursor.insertText(QString::fromStdString(s));
         if(!isNum(s)){
             auto ptr=Factory::create(s);
             //单目运算符且有右操作数则补全（
@@ -158,10 +157,10 @@ void MainWindow::displayData(std::string s_displayed,string s){
     }
 }
 
-void MainWindow::input(string s_displayed,string s){
+void MainWindow::input(string s){
     if(stream.empty())initialize();
     saveData(s);        //保存数据
-    displayData(s_displayed,s);    //显示数据
+    displayData(s);    //显示数据
 }
 
 void MainWindow::input_matrix(const Eigen::MatrixXd& m)
@@ -179,25 +178,19 @@ void MainWindow::input_matrix(const Eigen::MatrixXd& m)
         }
     }
     cursor=table->cellAt(0,_pos).lastCursorPosition();
-    //cursor=table->lastCursorPosition();
+    cursor.movePosition(QTextCursor::Right);
     ui->textInput->setTextCursor(cursor);
 }
 
 void MainWindow::on_textInput_textChanged()
 {
-    int p=cursor.blockNumber()-1;
-    QTextCursor tmp=table->cellAt(0,p).firstCursorPosition();
-    tmp.movePosition(QTextCursor::EndOfBlock,QTextCursor::KeepAnchor);
-    string changedText=tmp.selectedText().toStdString();
-    if(stream[p]!=changedText) stream[p]=changedText;
     ui->textInput->setFocus();
     ui->textInput->setTextCursor(cursor);
 }
 /******************************************************************************************/
 //按键槽函数
-#define BUTTON_3(S_DISPLAYED,S_ACTUAL,S_NAME) void MainWindow::on_button##S_NAME##_clicked(){input(S_DISPLAYED,S_ACTUAL);}
-#define BUTTON_2(S_DISPLAYED,S_NAME)          BUTTON_3(S_DISPLAYED,S_DISPLAYED,S_NAME)
-#define BUTTON_1(NUM)                         BUTTON_3(#NUM,#NUM,NUM)
+#define BUTTON_2(OP,NAME)  void MainWindow::on_button##NAME##_clicked(){input(OP);}
+#define BUTTON_1(NUM)      BUTTON_2(#NUM,NUM)
 
 BUTTON_1(0)
 BUTTON_1(1)
@@ -228,21 +221,21 @@ BUTTON_2("adj",Adjoint)
 BUTTON_2("trans",Transpose)
 BUTTON_2("×",Multiply)
 BUTTON_2("÷",Divide)
-BUTTON_3(QString(QChar(0x221A)).toStdString(),"sqrt",Sqrt)
+BUTTON_2(QString(QChar(0x221A)).toStdString(),Sqrt)
 
 
 void MainWindow::on_buttonPI_clicked()
 {
     if(stream.empty())initialize();
     saveData(doubleToString(PI));
-    displayData(doubleToString(PI),doubleToString(PI));
+    displayData(doubleToString(PI));
 }
 
 void MainWindow::on_buttonANS_clicked()
 {
     if(stream.empty())initialize();
     saveData("ANS");
-    displayData("ANS","ANS");
+    displayData("ANS");
     if(ans_mat.size()==1&&ans_mat(0,0)==0) return;
     includeMatrix++;
 }
@@ -324,7 +317,6 @@ void MainWindow::on_buttonSet_clicked()
     }
     else{       //保存矩阵
         includeMatrix++;
-        //if(stream[_pos]=="") stream[_pos]="MATRIX";
         stream.insert(stream.begin()+_pos+1,"MATRIX");
 
         Eigen::MatrixXd matXd(row,col);
@@ -387,6 +379,7 @@ void MainWindow::on_buttonDelete_clicked()
 {
     ui->textInput->setFocus();
     if(_pos==0&&cursor.atBlockStart()) return;
+    if(stream.empty()) initialize();
     if(!isNum(stream[_pos])){//删除运算符
         stream.erase(stream.begin()+_pos);
         table->removeColumns(_pos,1);
@@ -420,18 +413,20 @@ void MainWindow::on_buttonDelete_clicked()
 void MainWindow::on_buttonMatrix_clicked()
 {
     ui->stackedWidget->setCurrentWidget(ui->page2);
+    this->releaseKeyboard();
 }
 
 
 void MainWindow::on_buttonStandard_clicked()
 {
     ui->stackedWidget->setCurrentWidget(ui->page1);
+    this->grabKeyboard();
 }
 
 
 void MainWindow::on_buttonMoveLeft_clicked()
 {
-    if(stream.empty())initialize();
+    if(stream.empty()) initialize();
     ui->textInput->setFocus();
     if(isNum(stream[_pos]))cursor.movePosition(QTextCursor::Left);
     else{
@@ -448,14 +443,13 @@ void MainWindow::on_buttonMoveLeft_clicked()
         cursor.movePosition(QTextCursor::Right);
     }
     ui->textInput->setTextCursor(cursor);
-    //ui->textOutput->setText(QString::number(_pos));
-    ui->textOutput->setText(QString::fromStdString(stream[_pos]));
+
 }
 
 
 void MainWindow::on_buttonMoveRight_clicked()
 {
-    if(stream.empty())initialize();
+    if(stream.empty()) initialize();
     ui->textInput->setFocus();
     cursor.movePosition(QTextCursor::Right);
     if(_pos<stream.size()-1&&cursor.atBlockStart()&&!isNum(stream[_pos+1])){
@@ -471,85 +465,86 @@ void MainWindow::on_buttonMoveRight_clicked()
         cursor.movePosition(QTextCursor::Left);
     }
     ui->textInput->setTextCursor(cursor);
-    //ui->textOutput->setText(QString::number(_pos));
-    ui->textOutput->setText(QString::fromStdString(stream[_pos]));
+
 }
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    switch (event->key())
-    {
-        case Qt::Key_1:
-            on_button1_clicked();
-            break;
-        case Qt::Key_2:
-            on_button2_clicked();
-            break;
-        case Qt::Key_3:
-            on_button3_clicked();
-            break;
-        case Qt::Key_4:
-            on_button4_clicked();
-            break;
-        case Qt::Key_5:
-            on_button5_clicked();
-            break;
-        case Qt::Key_6:
-             on_button6_clicked();
-             break;
-        case Qt::Key_7:
-            on_button7_clicked();
-            break;
-        case Qt::Key_8:
-            on_button8_clicked();
-            break;
-        case Qt::Key_9:
-             on_button9_clicked();
-             break;
-        case Qt::Key_0:
-            on_button0_clicked();
-            break;
-        case Qt::Key_Left:
-            on_buttonMoveLeft_clicked();
-            break;
-        case Qt::Key_Right:
-            on_buttonMoveRight_clicked();
-            break;
-        case Qt::Key_Plus:
-            on_buttonPlus_clicked();
-            break;
-        case Qt::Key_Asterisk:
-            on_buttonMultiply_clicked();
-            break;
-        case Qt::Key_Slash:
-            on_buttonDivide_clicked();
-            break;
-        case Qt::Key_Period:
-             on_buttonDot_clicked();
-             break;
-        case Qt::Key_Percent:
-            on_buttonMod_clicked();
-            break;
-        case Qt::Key_ParenLeft:
-            on_buttonLeft_clicked();
-            break;
-        case Qt::Key_ParenRight:
-             on_buttonRight_clicked();
-             break;
-        case Qt::Key_Backspace:
-            on_buttonDelete_clicked();
-            break;
+    if(ui->stackedWidget->currentIndex()==0){
+        switch (event->key())
+        {
+            case Qt::Key_1:
+                on_button1_clicked();
+                break;
+            case Qt::Key_2:
+                on_button2_clicked();
+                break;
+            case Qt::Key_3:
+                on_button3_clicked();
+                break;
+            case Qt::Key_4:
+                on_button4_clicked();
+                break;
+            case Qt::Key_5:
+                on_button5_clicked();
+                break;
+            case Qt::Key_6:
+                 on_button6_clicked();
+                 break;
+            case Qt::Key_7:
+                on_button7_clicked();
+                break;
+            case Qt::Key_8:
+                on_button8_clicked();
+                break;
+            case Qt::Key_9:
+                 on_button9_clicked();
+                 break;
+            case Qt::Key_0:
+                on_button0_clicked();
+                break;
+            case Qt::Key_Left:
+                on_buttonMoveLeft_clicked();
+                break;
+            case Qt::Key_Right:
+                on_buttonMoveRight_clicked();
+                break;
+            case Qt::Key_Plus:
+                on_buttonPlus_clicked();
+                break;
+            case Qt::Key_Asterisk:
+                on_buttonMultiply_clicked();
+                break;
+            case Qt::Key_Slash:
+                on_buttonDivide_clicked();
+                break;
+            case Qt::Key_Period:
+                 on_buttonDot_clicked();
+                 break;
+            case Qt::Key_Percent:
+                on_buttonMod_clicked();
+                break;
+            case Qt::Key_ParenLeft:
+                on_buttonLeft_clicked();
+                break;
+            case Qt::Key_ParenRight:
+                 on_buttonRight_clicked();
+                 break;
+            case Qt::Key_Backspace:
+                on_buttonDelete_clicked();
+                break;
 
-        case Qt::Key_Minus:
-            on_buttonMinus_clicked();
-            break;
-        case Qt::Key_Equal:
-            on_buttonEqual_clicked();
-            break;
-       default:
-           break;
-       }
-        ui->textInput->setFocus();
+            case Qt::Key_Minus:
+                on_buttonMinus_clicked();
+                break;
+            case Qt::Key_Equal:
+                on_buttonEqual_clicked();
+                break;
+           default:
+               break;
+           }
+    }
+    ui->textInput->setFocus();
 }
 

@@ -51,34 +51,26 @@ private slots:
     void on_buttonMod_clicked();
     void on_buttonMatrix_clicked();
     void on_buttonStandard_clicked();
-
     void on_buttonSet_clicked();
     void on_buttonEigValues_clicked();
     void on_buttonDet_clicked();
     void on_buttonPI_clicked();
     void on_buttonPow_clicked();
     void on_buttonInverse_clicked();
-
     void on_textInput_textChanged();
-
     void on_buttonMoveLeft_clicked();
-
     void on_buttonMoveRight_clicked();
-
     void on_buttonSqrt_clicked();
-
     void on_buttonTrace_clicked();
-
     void on_buttonAdjoint_clicked();
-
     void on_buttonTranspose_clicked();
 
 private:
-    void input(std::string s_displayed,std::string s);
+    void input(std::string s);
     void input_matrix(const Eigen::MatrixXd& m);
     void initialize();
     void saveData(std::string s);
-    void displayData(std::string s_displayed,std::string s);
+    void displayData(std::string s);
 private:
     QTextBlockFormat blockFormat;
     QTextTableFormat tableFormat;

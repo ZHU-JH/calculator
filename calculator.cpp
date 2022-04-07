@@ -32,16 +32,16 @@ void Calculator::standardize(vector<string> &stream){
                     i--;
                 }
             }
-            //补全忽略的乘号，补全条件：当前字符串为单目运算符或（，且前一个字符串为数字或）
-            if(i>0&&(ptr->numOprand<=1&&!ptr->haveLeftOprand)&&(isNum(stream[i-1])||stream[i-1]==")")){
-                stream.insert(stream.begin()+i,"*");
+            //补全忽略的乘号
+            if(i>0&&(ptr->numOprand<=1&&!ptr->haveLeftOprand)&&(isNum(stream[i-1]))){
+                stream.insert(stream.begin()+i,"×");
                 i++;
              }
         }
         else{
-            //补全忽略的乘号，补全条件：当前字符串为特殊数字，且前一个字符串为数字或）
-            if(i>0&&(isNum(stream[i-1])||stream[i-1]==")")){
-                stream.insert(stream.begin()+i,"*");
+            //补全忽略的乘号
+            if(i>0&&(isNum(stream[i-1]))){
+                stream.insert(stream.begin()+i,"×");
                 i++;
              }
             stream[i]=sign>0?stream[i]:"-"+stream[i];
@@ -78,11 +78,11 @@ void Calculator::standardize(vector<string> &stream){
 bool Calculator::solve(vector<string>& stream){
     standardize(stream);
     int mat_index=0;
-    for(int i=0;i<stream.size();i++){
+    for(int i=0;i<stream.size();i++){//逆波兰表达式求解
         if (isNum(stream[i])){ //操作数入栈
             if(!includeMatrix){
                 if(stream[i]=="ANS") num_stack.push(ans_num);
-                else num_stack.push(stringToDouble(stream[i]));  //非矩阵模式
+                else num_stack.push(stringToDouble(stream[i]));
             }
             else if(stream[i]=="MATRIX"){
                 mat_stack.push(matrix_list[mat_index++]);
@@ -138,10 +138,10 @@ void Calculator::clear()
 }
 
 
-// 单个操作符运算
+// 单步运算
 void Calculator::calculate(stack<double>&num) {
     auto ptr=Factory::create(op_stack.top());
-    //if(num.size()<ptr->numOprand) throw string("syntax error");
+    if(ptr==nullptr) throw string("unexpected input");
     double a[2]={0};
     for (auto i = 0; i < ptr->numOprand; ++i) {
         a[i] = num.top();
@@ -152,7 +152,7 @@ void Calculator::calculate(stack<double>&num) {
 }
 void Calculator::calculate(stack<Eigen::MatrixXd>&mat) {
     auto ptr=Factory::create(op_stack.top());
-    //if(mat.size()<ptr->numOprand) throw string("syntax error");
+    if(ptr==nullptr) throw string("unexpected input");
     Eigen::MatrixXd a[2];
     for (auto i = 0; i < ptr->numOprand; ++i) {
         a[i] = mat.top();
